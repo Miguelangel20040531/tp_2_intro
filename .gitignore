@@ -1,0 +1,13 @@
+# Creo que gitignore es para que no se suban estas cosas a git
+# Entorno virtual
+venv/
+env/
+
+# Cache de Python
+__pycache__/
+
+# Configuración del editor
+.vscode/
+.idea/
+
+

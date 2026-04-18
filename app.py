@@ -24,21 +24,21 @@ def obtener_partidos():
         fecha=request.args.get('fecha')
         fase=request.args.get('fase')
 
-        if local and not tiene_formato_string(local):
-            return jsonify({"error": "Equipo local mal ingresado"}), 400
-        else:
+        if local:
+            if not tiene_formato_string(local):
+                return jsonify({"error": "Equipo local mal ingresado"}), 400
             condiciones.append("local = %s")
             parametros.append(local)
 
-        if visitante and not tiene_formato_string(visitante):
-            return jsonify({"error": "Equipo visitante mal ingresado"}), 400
-        else:
+        if visitante:
+            if not tiene_formato_string(visitante):
+                return jsonify({"error": "Equipo visitante mal ingresado"}), 400
             condiciones.append("visitante = %s")
             parametros.append(visitante)
 
-        if fecha and not es_fecha_correcta(fecha):
-            return jsonify({"error": "Fecha inválida"}), 400
-        else:
+        if fecha:
+            if not es_fecha_correcta(fecha):
+                return jsonify({"error": "Fecha inválida"}), 400
             condiciones.append("fecha = %s")
             parametros.append(fecha)
 
@@ -61,7 +61,7 @@ def obtener_partidos():
         conn.close()
         #no hay contenido, quizas por un parametro ingresado incorrectamente
         if not partidos:
-            return 204
+            return '', 204
         # Todo salió correctamente
         return jsonify(partidos), 200
     except Exception as e:

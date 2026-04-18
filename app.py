@@ -25,13 +25,13 @@ def obtener_partidos():
         fase=request.args.get('fase')
 
         if local and not tiene_formato_string(local):
-            return jsonify({"error": "Fecha inválida"}), 400
+            return jsonify({"error": "Equipo local mal ingresado"}), 400
         else:
             condiciones.append("local = %s")
             parametros.append(local)
 
         if visitante and not tiene_formato_string(visitante):
-            return jsonify({"error": "Fecha inválida"}), 400
+            return jsonify({"error": "Equipo visitante mal ingresado"}), 400
         else:
             condiciones.append("visitante = %s")
             parametros.append(visitante)
@@ -113,7 +113,7 @@ def crear_partido():
             return jsonify({"error": "ya existe un partido con esos equipos y fecha"}), 409
 
         cursor.execute("""
-                       INSERT INTO fixture (id, local, visitante, estadio, ciudad, fecha, fase, goles_local, goles_visitante)
+                       INSERT INTO fixture (local, visitante, estadio, ciudad, fecha, fase, goles_local, goles_visitante)
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                        """, (local, visitante, estadio, ciudad, fecha, fase,
                           goles_local, goles_visitante))
@@ -121,7 +121,7 @@ def crear_partido():
         conn.commit()
         cursor.close()
         conn.close()
-        return ("Equipo agregado correctamente", 201)
+        return jsonify({"Equipo agregado correctamente"}), 201
     except Exception as e:
         print(e)
         return jsonify({"error": "Error interno del servidor"}), 500

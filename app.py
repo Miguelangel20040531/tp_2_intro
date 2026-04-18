@@ -50,6 +50,18 @@ def obtener_partidos():
         if condiciones:
             query += " WHERE " + " AND ".join(condiciones)
 
+        #PAGINACION
+        limit = request.args.get('_limit', type=int)
+        offset = request.args.get('_offset', type=int)
+
+        if limit is not None:
+            query += " LIMIT %s"
+            parametros.append(limit)
+
+        if offset is not None:
+            query += " OFFSET %s"
+            parametros.append(offset)
+
         cursor.execute(query, parametros)
         # ejemplo de como funciona el execute
         # query = "SELECT * FROM fixture WHERE local = %s AND fase = %s"

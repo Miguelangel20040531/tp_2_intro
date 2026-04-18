@@ -121,7 +121,7 @@ def crear_partido():
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"Equipo agregado correctamente"}), 201
+        return jsonify({"mensaje":"Equipo agregado correctamente"}), 201
     except Exception as e:
         print(e)
         return jsonify({"error": "Error interno del servidor"}), 500

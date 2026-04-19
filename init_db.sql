@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS 'mundial';
 USE mundial;
 
 CREATE TABLE IF NOT EXISTS fixture (
-    id               INT AUTO_INCREMENT PRIMARY KEY,
+    id_fixture               INT AUTO_INCREMENT PRIMARY KEY,
     local            VARCHAR(255) DEFAULT NULL,
     visitante        VARCHAR(255) DEFAULT NULL,
     estadio          VARCHAR(255) NOT NULL,

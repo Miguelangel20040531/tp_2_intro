@@ -139,3 +139,17 @@ INSERT INTO fixture (estadio, ciudad, fecha, fase) VALUES
 
 -- FINAL
 ('MetLife Stadium', 'Nueva York', '2026-07-19', 'Final');
+
+CREATE TABLE Predicciones(
+    id_fixture INT,
+    id_usuario INT,
+    goles_local INT,
+    goles_visitante INT,
+    FOREIGN KEY (id_fixture) REFERENCES fixture(id_fixture) ON DELETE CASCADE
+);
+
+
+
+
+
+

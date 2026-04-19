@@ -1,5 +1,5 @@
 from flask import Flask
-from Partidos import partidos_db
+from partidos import partidos_db
 from db import get_connection
 
 app = Flask(__name__)

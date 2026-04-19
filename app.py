@@ -58,19 +58,19 @@ def obtener_partidos():
         cursor.execute(contador, parametros_filtros)
         total = cursor.fetchone()["total"]
 
-        limit = request.args.get('_limit',default=10, type=int)
-        offset = request.args.get('_offset',default=0, type=int)
+        limit = request.args.get('_limit',default=10,type=int)
+        offset = request.args.get('_offset',default=0,type=int)
 
         parametros_query=parametros_filtros.copy()
 
-        if limit:
-            if not es_entero(limit) or not es_positivo(limit):
+        if limit is not None:
+            if not es_entero(limit) or not es_positivo(int(limit)):
                 return jsonify({"error": "Valor inválido"}), 400
             query += " LIMIT %s"
             parametros_query.append(limit)
 
-        if offset:
-            if not es_entero(offset) or not es_positivo(offset):
+        if offset is not None:
+            if not es_entero(offset) or not es_positivo(int(offset)):
                 return jsonify({"error": "Valor inválido"}), 400
             query += " OFFSET %s"
             parametros_query.append(offset)

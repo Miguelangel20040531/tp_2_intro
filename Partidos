@@ -3,6 +3,16 @@ from db import get_connection
 
 partidos_db= Blueprint("partidos",__name__)
 
+@partidos_db.route("/")
+def obtener_partidos():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM fixture")
+    partidos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(partidos)
+
 @partidos_db.route("/<id_fixture>/prediccion", methods=['POST'])
 def predecir_partido(id_fixture):
     conn = get_connection()

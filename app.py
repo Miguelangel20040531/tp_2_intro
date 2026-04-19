@@ -1,6 +1,6 @@
 from flask import Flask,jsonify,request
 from db import get_connection
-from validaciones import es_fecha_correcta,tiene_formato_string,es_entero
+from validaciones import es_fecha_correcta,tiene_formato_string,es_entero,es_positivo
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ def obtener_partidos():
         query = "SELECT id,local,visitante,estadio,ciudad,fecha,fase FROM fixture"
         #cubro posibles filtros opcionales con condiciones y parametros
         condiciones=[]
-        parametros=[]
+        parametros_filtros=[]
 
         local=request.args.get('local')
         visitante=request.args.get('visitante')
@@ -28,54 +28,88 @@ def obtener_partidos():
             if not tiene_formato_string(local):
                 return jsonify({"error": "Equipo local mal ingresado"}), 400
             condiciones.append("local = %s")
-            parametros.append(local)
+            parametros_filtros.append(local)
 
         if visitante:
             if not tiene_formato_string(visitante):
                 return jsonify({"error": "Equipo visitante mal ingresado"}), 400
             condiciones.append("visitante = %s")
-            parametros.append(visitante)
+            parametros_filtros.append(visitante)
 
         if fecha:
             if not es_fecha_correcta(fecha):
                 return jsonify({"error": "Fecha inválida"}), 400
             condiciones.append("fecha = %s")
-            parametros.append(fecha)
+            parametros_filtros.append(fecha)
 
         if fase:
             condiciones.append("fase = %s")
-            parametros.append(fase)
+            parametros_filtros.append(fase)
 
         # si hay condiciones, las agrego
         if condiciones:
             query += " WHERE " + " AND ".join(condiciones)
 
         #PAGINACION
-        limit = request.args.get('_limit', type=int)
-        offset = request.args.get('_offset', type=int)
+        contador = "SELECT COUNT(*) as total FROM fixture"
+        if condiciones:
+            contador += " WHERE " + " AND ".join(condiciones)
 
-        if limit is not None:
+        cursor.execute(contador, parametros_filtros)
+        total = cursor.fetchone()["total"]
+
+        limit = request.args.get('_limit',default=10, type=int)
+        offset = request.args.get('_offset',default=0, type=int)
+
+        parametros_query=parametros_filtros.copy()
+
+        if limit:
+            if not es_entero(limit) or not es_positivo(limit):
+                return jsonify({"error": "Valor inválido"}), 400
             query += " LIMIT %s"
-            parametros.append(limit)
+            parametros_query.append(limit)
 
-        if offset is not None:
+        if offset:
+            if not es_entero(offset) or not es_positivo(offset):
+                return jsonify({"error": "Valor inválido"}), 400
             query += " OFFSET %s"
-            parametros.append(offset)
+            parametros_query.append(offset)
 
-        cursor.execute(query, parametros)
+        cursor.execute(query, parametros_query)
         # ejemplo de como funciona el execute
         # query = "SELECT * FROM fixture WHERE local = %s AND fase = %s"
         # params = ["Boca", "final"]
         # el execute haria algo asi: SELECT * FROM fixture WHERE local = 'Boca' AND fase = 'final'
 
         partidos = cursor.fetchall()
+
+        #armo el HATEOAS
+        #cada pagina ocupa limit posiciones. (avanzar->sumar limit) (retroceder->restar limit)
+
+        base_url = request.base_url
+
+        #para _last
+        #conto registros
+
+        cursor.execute("SELECT COUNT(*) as total FROM fixture")
+        total = cursor.fetchone()["total"]
+        ultimo_offset = max(total - limit,0)
+
+        links = {
+            "_first": f"{base_url}?_limit={limit}&_offset=0",
+            "_prev": f"{base_url}?_limit={limit}&_offset={max(offset - limit, 0)}",
+            "_next": f"{base_url}?_limit={limit}&_offset={offset + limit}",
+            "_last": f"{base_url}?_limit={limit}&_offset={ultimo_offset}"
+        }
         cursor.close()
         conn.close()
         #no hay contenido, quizas por un parametro ingresado incorrectamente
+
         if not partidos:
             return '', 204
+
         # Todo salió correctamente
-        return jsonify(partidos), 200
+        return jsonify({"data":partidos,"links":links}), 200
     except Exception as e:
         print(e)
         return jsonify({"error": "Error interno del servidor"}), 500

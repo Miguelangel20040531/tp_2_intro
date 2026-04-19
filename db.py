@@ -6,5 +6,5 @@ def get_connection():
         host="localhost",
         user="miguel",
         password="1234",
-        database="ids_sqd"
+        database="mundial" # Se cambió esta linea a "mundial" (antes "ids_sqd"), para que coincida con la base que se crea en init_db.sql.
     )

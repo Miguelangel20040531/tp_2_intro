@@ -140,6 +140,12 @@ INSERT INTO fixture (estadio, ciudad, fecha, fase) VALUES
 -- FINAL
 ('MetLife Stadium', 'Nueva York', '2026-07-19', 'Final');
 
+CREATE TABLE IF NOT EXISTS usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE Predicciones(
     id_fixture INT,
     id_usuario INT,

@@ -173,15 +173,23 @@ def predecir_partido(id_fixture):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
 #Si no se manda nada
-    if not data:
-       return ("Error:Falta json (none)"), 400
-    
+    if data is None:
+       return jsonify({'code':'400','message':'Falta json (none)','Descripcion':'Bad request'}), 400
+    if data=={}:
+        return jsonify({'Error':'Json vacio'}),400
+    if (
+    data.get("id_usuario") is None or
+    data.get("goles_local") is None or
+    data.get("goles_visitante") is None
+    ):
+     return jsonify({'code':'400','message':'Todos los datos son obligatorios','Descripcion':'Bad request'}), 400
     
     id_usuario= data.get("id_usuario")
     goles_local= data.get("goles_local")
     goles_visitante= data.get("goles_visitante")
+
 
 #Si no esxiste el partido y si goles_local y goles_visitante tienen resultados(valores)
 
@@ -189,9 +197,9 @@ def predecir_partido(id_fixture):
                    ,(id_fixture,))
     partido= cursor.fetchone()
     if not partido:
-        return ("Partido inexistente"), 409
-    elif partido["goles_local"] is not None and partido["goles_visitante"] is not None:
-        return ("Este partido ya se jugó"), 404
+        return jsonify({'code':'404','message':'Partido inexistente o no encontrado','Descripcion':'Not Found'}), 404
+    if partido["goles_local"] is not None and partido["goles_visitante"] is not None:
+        return jsonify({'code':'400','message':'El partido ya se jugó','Descripcion':'Bad request'}), 400
     
 #Si un usuario predice el mismo partido mas de una vez
 
@@ -199,7 +207,8 @@ def predecir_partido(id_fixture):
                    ,(id_fixture,id_usuario))
     repetido= cursor.fetchone()
     if repetido:
-        return ("Este usuario ya hizo una prediccion"), 409
+        return jsonify({'code':'409','message':'El usuario ya hizo prediccion de este partido','Descripcion':'Conflict'}), 409
+    
     
 #Si se manda la solicitud correctamente
 
@@ -208,8 +217,11 @@ def predecir_partido(id_fixture):
                    VALUES (%s, %s, %s, %s)
                    """, (id_fixture, id_usuario, goles_local, goles_visitante))
     
+    
     conn.commit()
     cursor.close()
     conn.close()
     
-    return ("Prediccion agregada correctamente"), 201
+    return jsonify({'Prediccion agregada correctamente'}), 201
+
+

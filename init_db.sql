@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS mundial;
 USE mundial;
 
 CREATE TABLE IF NOT EXISTS fixture (
-    id               INT AUTO_INCREMENT PRIMARY KEY,
+    id_fixture               INT AUTO_INCREMENT PRIMARY KEY,
     local            VARCHAR(255) DEFAULT NULL,
     visitante        VARCHAR(255) DEFAULT NULL,
     estadio          VARCHAR(255) NOT NULL,
@@ -139,3 +139,17 @@ INSERT INTO fixture (estadio, ciudad, fecha, fase) VALUES
 
 -- FINAL
 ('MetLife Stadium', 'Nueva York', '2026-07-19', 'Final');
+
+CREATE TABLE Predicciones(
+    id_fixture INT,
+    id_usuario INT,
+    goles_local INT,
+    goles_visitante INT,
+    FOREIGN KEY (id_fixture) REFERENCES fixture(id_fixture) ON DELETE CASCADE
+);
+
+
+
+
+
+

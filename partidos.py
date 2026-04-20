@@ -4,7 +4,7 @@ from validaciones import es_fecha_correcta,tiene_formato_string,es_entero,es_pos
 
 partidos_db= Blueprint("partidos",__name__)
 
-@partidos_db.route("/partidos",methods=["GET"])
+@partidos_db.route("/",methods=["GET"])
 def obtener_partidos():
     try:
         conn = get_connection()
@@ -104,7 +104,7 @@ def obtener_partidos():
         return jsonify({"error": "Error interno del servidor"}), 500
 
 
-@partidos_db.route("/partidos",methods=["POST"])
+@partidos_db.route("/",methods=["POST"])
 def crear_partido():
     try:
         data = request.json

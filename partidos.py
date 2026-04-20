@@ -225,3 +225,125 @@ def predecir_partido(id_fixture):
     return jsonify({'Prediccion agregada correctamente'}), 201
 
 
+
+def respuesta_error(code, message, description, level = 'error'):
+    return jsonify({
+        "errors" : [
+            {
+                "code" : str(code),
+                "message" : message,
+                "level" : level,
+                "description" : description
+            }
+        ]
+    }), code
+
+
+#PARTIDOS POR ID
+@partidos_db.route('/<id_fixture>', methods=['GET'])
+def obtener_partido(id_fixture):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        if not id_fixture.isdigit():
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='No es id')
+        id = int(id_fixture)
+        cursor.execute("SELECT * FROM fixture WHERE id_fixture = %s ", (id,))
+        partido = cursor.fetchone()
+        if partido is None:
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=404, message='Not found', level = 'error', description=f"No se encuentra el partido con el id: {id}")
+        cursor.close()
+        conn.close()
+        return jsonify({'id': partido['id_fixture'],
+                        'equipo_local': partido['local'],
+                        'equipo_visitante': partido['visitante'],
+                        'fecha': partido['fecha'],
+                        'fase': partido['fase'],
+                        'resultado':{
+                            'local': partido['goles_local'],
+                            'visitante': partido['goles_visitante']
+                        }}),200
+
+    except Exception:
+
+        return respuesta_error(code=500, message='Internal Server Error', level = 'error', description = 'error server')
+
+#ELIMINAR PARTIDO
+@partidos_db.route('/<id_fixture>', methods=['DELETE'])
+def eliminar_partido(id_fixture):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        if not id_fixture.isdigit():
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='No es id')
+        id = int(id_fixture)
+        cursor.execute("DELETE FROM fixture WHERE id_fixture = %s ", (id,))
+        conn.commit()
+        partido = cursor.rowcount
+        if partido == 0:
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=404, message='Not found', level='error',
+                                   description=f"No se encuentra el partido con el id: {id}")
+        if partido == 1:
+            cursor.close()
+            conn.close()
+            return '', 204
+    except Exception:
+        return respuesta_error(code=500, message='Internal Server Error', level='error', description='error server')
+
+#RESULTADOS
+@partidos_db.route('/<id_fixture>/resultado', methods=['PUT'])
+def actualizar_resultado(id_fixture):
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        if not id_fixture.isdigit():
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='No es id')
+        id = int(id_fixture)
+        data = request.get_json()
+        if not data:
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='Faltan datos')
+        local = data.get('local')
+        visitante = data.get('visitante')
+        if local is None or visitante is None:
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='Faltan datos')
+        try:
+            local = int(local)
+            visitante = int(visitante)
+        except (ValueError, TypeError):
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='Datos incorrectos')
+        if local < 0 or visitante < 0:
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=400, message='Bad Request', level='error', description='Datos incorrectos')
+        cursor.execute("UPDATE fixture SET goles_local = %s, goles_visitante = %s WHERE id_fixture = %s ", (local, visitante,id))
+        conn.commit()
+        resultado = cursor.rowcount
+
+        if resultado == 0:
+            cursor.close()
+            conn.close()
+            return respuesta_error(code=404, message='Not found', level='error',
+                                   description=f"No se encuentra el partido con el id: {id}")
+        cursor.close()
+        conn.close()
+        return '', 204
+    except Exception:
+        return respuesta_error(code=500, message='Internal Server Error', level='error', description='error server')
+

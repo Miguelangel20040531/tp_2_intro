@@ -9,9 +9,7 @@ def obtener_partidos():
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        #Selecciono todo menos los goles (osea los resultados)
-        query = "SELECT id,local,visitante,estadio,ciudad,fecha,fase FROM fixture"
-        #cubro posibles filtros opcionales con condiciones y parametros
+        query = "SELECT id_fixture,local,visitante,fecha,fase FROM fixture"
         condiciones=[]
         parametros_filtros=[]
 
@@ -42,7 +40,7 @@ def obtener_partidos():
             condiciones.append("fase = %s")
             parametros_filtros.append(fase)
 
-        # si hay condiciones, las agrego
+        # si hay condiciones, las agrego a la query hecha
         if condiciones:
             query += " WHERE " + " AND ".join(condiciones)
 
@@ -84,11 +82,6 @@ def obtener_partidos():
 
         base_url = request.base_url
 
-        #para _last
-        #conto registros
-
-        cursor.execute("SELECT COUNT(*) as total FROM fixture")
-        total = cursor.fetchone()["total"]
         ultimo_offset = max(total - limit,0)
 
         links = {
@@ -99,8 +92,8 @@ def obtener_partidos():
         }
         cursor.close()
         conn.close()
-        #no hay contenido, quizas por un parametro ingresado incorrectamente
 
+        #no hay contenido, quizas por un parametro ingresado incorrectamente
         if not partidos:
             return '', 204
 
@@ -114,7 +107,6 @@ def obtener_partidos():
 @partidos_db.route("/partidos",methods=["POST"])
 def crear_partido():
     try:
-        #obtengo lo mandado por el usuario
         data = request.json
 
         if not data:

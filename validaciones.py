@@ -1,5 +1,11 @@
 from datetime import datetime
 
+def es_texto_no_vacio(texto):
+    return isinstance(texto, str) and texto.strip() != ""
+
+def es_email_basico(email):
+    return isinstance(email, str) and "@" in email and "." in email and email.strip() != ""
+
 def tiene_formato_string(cadena):
     """ Valido que sea string y que no sea string vacio"""
     return isinstance(cadena, str) and cadena.strip() != "" and cadena.isalpha()

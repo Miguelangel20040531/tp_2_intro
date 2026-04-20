@@ -114,12 +114,8 @@ def crear_partido():
 
         local=data.get("local")
         visitante=data.get("visitante")
-        estadio=data.get("estadio")
-        ciudad=data.get("ciudad")
         fecha=data.get("fecha")
         fase=data.get("fase")
-        goles_local=data.get("goles_local")
-        goles_visitante=data.get("goles_visitante")
         
         #validaciones 400
         if not local or not visitante or not tiene_formato_string(local) or not tiene_formato_string(visitante):
@@ -127,9 +123,6 @@ def crear_partido():
 
         if not es_fecha_correcta(fecha):
             return jsonify({"error": "Fecha inválida"}), 400
-
-        if goles_local is None or goles_visitante is None or not es_entero(goles_local) or not es_entero(goles_visitante):
-            return jsonify({"error": "Faltan goles"}), 400
 
         #una vez validado todo
         conn = get_connection()
@@ -148,9 +141,8 @@ def crear_partido():
 
         cursor.execute("""
                        INSERT INTO fixture (local, visitante, estadio, ciudad, fecha, fase, goles_local, goles_visitante)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                       """, (local, visitante, estadio, ciudad, fecha, fase,
-                          goles_local, goles_visitante))
+                       VALUES (%s, %s, %s, %s)
+                       """, (local, visitante,fecha, fase))
 
         conn.commit()
         cursor.close()

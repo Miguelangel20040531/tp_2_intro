@@ -140,7 +140,7 @@ def crear_partido():
             return jsonify({"error": "ya existe un partido con esos equipos y fecha"}), 409
 
         cursor.execute("""
-                       INSERT INTO fixture (local, visitante, estadio, ciudad, fecha, fase, goles_local, goles_visitante)
+                       INSERT INTO fixture (local, visitante, fecha, fase)
                        VALUES (%s, %s, %s, %s)
                        """, (local, visitante,fecha, fase))
 
